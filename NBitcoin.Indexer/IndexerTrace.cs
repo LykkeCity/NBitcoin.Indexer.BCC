@@ -13,7 +13,7 @@ namespace NBitcoin.Indexer
     public class IndexerTrace
     {
 		static ILogger _Logger = NullLogger.Instance;
-		public static void Configure(ILoggerFactory factory)
+		public void Configure(ILoggerFactory factory)
 		{
 			_Logger = factory.CreateLogger("NBitcoin.Indexer");
 		}
