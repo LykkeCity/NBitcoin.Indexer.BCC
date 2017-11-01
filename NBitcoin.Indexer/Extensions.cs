@@ -128,24 +128,22 @@ namespace NBitcoin.Indexer
         {
             return "unk" + Hashes.Hash256(Encoding.UTF8.GetBytes(entity.PartitionKey + entity.RowKey)).ToString();
         }
-
-		static readonly MethodInfo WriteODataEntity = typeof(TableConstants).Assembly.GetType("Microsoft.WindowsAzure.Storage.Table.Protocol.TableOperationHttpWebRequestFactory")
-					.GetMethod("WriteOdataEntity", BindingFlags.NonPublic | BindingFlags.Static);
-		public static byte[] Serialize(this ITableEntity entity)
+        public static byte[] Serialize(this ITableEntity entity)
         {
             MemoryStream ms = new MemoryStream();
             using(var messageWriter = new ODataMessageWriter(new Message(ms), new ODataMessageWriterSettings()))
             {
                 // Create an entry writer to write a top-level entry to the message.
                 ODataWriter entryWriter = messageWriter.CreateODataEntryWriter();
-				WriteODataEntity.Invoke(null, new object[] { entity, TableOperationType.Insert, null, entryWriter, null, true });
+                var writeODataEntity = typeof(TableConstants).Assembly.GetType("Microsoft.WindowsAzure.Storage.Table.Protocol.TableOperationHttpWebRequestFactory")
+                    .GetMethod("WriteOdataEntity", BindingFlags.NonPublic | BindingFlags.Static);
+
+                writeODataEntity.Invoke(null, new object[] { entity, TableOperationType.Insert, null, entryWriter });
                 return ms.ToArray();
             }
         }
 
-		static readonly MethodInfo ReadODataEntity = typeof(TableConstants).Assembly.GetType("Microsoft.WindowsAzure.Storage.Table.Protocol.TableOperationHttpResponseParsers")
-					.GetMethod("ReadAndUpdateTableEntity", BindingFlags.NonPublic | BindingFlags.Static);
-		public static void Deserialize(this ITableEntity entity, byte[] value)
+        public static void Deserialize(this ITableEntity entity, byte[] value)
         {
             MemoryStream ms = new MemoryStream(value);
             using(ODataMessageReader messageReader = new ODataMessageReader(new Message(ms), new ODataMessageReaderSettings()
@@ -157,8 +155,10 @@ namespace NBitcoin.Indexer
             }))
             {
                 ODataReader reader = messageReader.CreateODataEntryReader();
+                var readAndUpdateTableEntity = typeof(TableConstants).Assembly.GetType("Microsoft.WindowsAzure.Storage.Table.Protocol.TableOperationHttpResponseParsers")
+                    .GetMethod("ReadAndUpdateTableEntity", BindingFlags.NonPublic | BindingFlags.Static);
                 reader.Read();
-				ReadODataEntity.Invoke(null, new object[] { entity, reader.Item, 31, null });
+                readAndUpdateTableEntity.Invoke(null, new object[] { entity, reader.Item, 31, null });
             }
         }
 
