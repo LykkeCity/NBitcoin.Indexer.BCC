@@ -1,17 +1,17 @@
 <?xml version="1.0"?>
 <package >
 	<metadata>
-		<id>NBitcoin.Indexer</id>
+		<id>NBitcoin.Indexer.BCC</id>
 		<version>$version$</version>
-		<title>NBitcoin.Indexer</title>
-		<authors>Nicolas Dorier</authors>
+		<title>NBitcoin.Indexer.BCC</title>
+		<authors>Nicolas Dorier (For Original)</authors>
 		<owners>$author$</owners>
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
-		<description>Block chain Indexer using Microsoft Azure as backend</description>
+		<description>Block chain Indexer for Bitcoin Cash using Microsoft Azure as backend</description>
 		<summary></summary>
-		<projectUrl>https://github.com/NicolasDorier/NBitcoin.Indexer</projectUrl>
+		<projectUrl>https://github.com/LykkeCity/NBitcoin.Indexer.BCC</projectUrl>
 		<copyright>Copyright 2014</copyright>
-		<tags>bitcoin</tags>
+		<tags>bitcoin cash</tags>
 	</metadata>
 	<files>
 		<file src="bin\Release\NBitcoin.Indexer.pdb" target="lib\net45" />
