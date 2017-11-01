@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAzure.Storage.Table;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,7 +11,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace NBitcoin.Indexer
 {
-    public class IndexerTrace
+    class IndexerTrace
     {
 		static ILogger _Logger = NullLogger.Instance;
 		public void Configure(ILoggerFactory factory)
