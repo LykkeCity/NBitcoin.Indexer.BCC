@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.WindowsAzure.Storage;
+﻿using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Auth;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.Table;
@@ -34,10 +33,10 @@ namespace NBitcoin.Indexer
     }
     public class AzureIndexer
     {
-        public static AzureIndexer CreateIndexer(IConfiguration config)
+        public static AzureIndexer CreateIndexer()
         {
-            var indexerConfig = IndexerConfiguration.FromConfiguration(config);
-            return indexerConfig.CreateIndexer();
+            var config = IndexerConfiguration.FromConfiguration();
+            return config.CreateIndexer();
         }
 
 
@@ -62,7 +61,7 @@ namespace NBitcoin.Indexer
 
         public long IndexTransactions(ChainBase chain = null)
         {
-            using(IndexerTrace.NewCorrelation("Import transactions to azure started"))
+            using(IndexerTrace.NewCorrelation("Import transactions to azure started").Open())
             {
                 using(var node = Configuration.ConnectToNode(false))
                 {
@@ -152,7 +151,7 @@ namespace NBitcoin.Indexer
         
         public long IndexBlocks(ChainBase chain = null)
         {
-            using(IndexerTrace.NewCorrelation("Import blocks to azure started"))
+            using(IndexerTrace.NewCorrelation("Import blocks to azure started").Open())
             {
                 using(var node = Configuration.ConnectToNode(false))
                 {
@@ -217,7 +216,7 @@ namespace NBitcoin.Indexer
 
         public int IndexOrderedBalances(ChainBase chain)
         {
-            using(IndexerTrace.NewCorrelation("Import balances to azure started"))
+            using(IndexerTrace.NewCorrelation("Import balances to azure started").Open())
             {
                 using(var node = Configuration.ConnectToNode(false))
                 {
@@ -237,7 +236,7 @@ namespace NBitcoin.Indexer
 
         public int IndexWalletBalances(ChainBase chain)
         {
-            using(IndexerTrace.NewCorrelation("Import wallet balances to azure started"))
+            using(IndexerTrace.NewCorrelation("Import wallet balances to azure started").Open())
             {
                 using(var node = Configuration.ConnectToNode(false))
                 {
@@ -417,7 +416,7 @@ namespace NBitcoin.Indexer
                 throw new ArgumentNullException("chain");
             SetThrottling();
 
-            using(IndexerTrace.NewCorrelation("Index main chain to azure started"))
+            using(IndexerTrace.NewCorrelation("Index main chain to azure started").Open())
             {
                 Configuration.GetChainTable().CreateIfNotExistsAsync().GetAwaiter().GetResult();
                 IndexerTrace.InputChainTip(chain.Tip);

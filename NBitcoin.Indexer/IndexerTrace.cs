@@ -1,33 +1,25 @@
-﻿using Microsoft.Extensions.Logging;
-using Microsoft.WindowsAzure.Storage.Table;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.WindowsAzure.Storage.Table;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace NBitcoin.Indexer
 {
     class IndexerTrace
     {
-		static ILogger _Logger = NullLogger.Instance;
-		public void Configure(ILoggerFactory factory)
-		{
-			_Logger = factory.CreateLogger("NBitcoin.Indexer");
-		}
-
+        static TraceSource _Trace = new TraceSource("NBitcoin.Indexer");
         internal static void ErrorWhileImportingBlockToAzure(uint256 id, Exception ex)
         {
-			_Logger.LogError(ex, "Error while importing " + id + " in azure blob");
+            _Trace.TraceEvent(TraceEventType.Error, 0, "Error while importing " + id + " in azure blob : " + Utils.ExceptionToString(ex));
         }
 
 
         internal static void BlockAlreadyUploaded()
         {
-			_Logger.LogDebug("Block already uploaded");
+            _Trace.TraceEvent(TraceEventType.Verbose, 0, "Block already uploaded");
         }
 
         internal static void BlockUploaded(TimeSpan time, int bytes)
@@ -35,22 +27,24 @@ namespace NBitcoin.Indexer
             if (time.TotalSeconds == 0.0)
                 time = TimeSpan.FromMilliseconds(10);
             double speed = ((double)bytes / 1024.0) / time.TotalSeconds;
-			_Logger.LogDebug("Block uploaded successfully (" + speed.ToString("0.00") + " KB/S)");
+            _Trace.TraceEvent(TraceEventType.Verbose, 0, "Block uploaded successfully (" + speed.ToString("0.00") + " KB/S)");
         }
 
-        internal static IDisposable NewCorrelation(string activityName)
+        internal static TraceCorrelation NewCorrelation(string activityName)
         {
-			return _Logger.BeginScope(activityName);
+            var correlation = new TraceCorrelation(_Trace, activityName);
+            _Trace.TraceInformation(activityName);
+            return correlation;
         }
 
         internal static void CheckpointLoaded(ChainedBlock block, string checkpointName)
         {
-			_Logger.LogInformation("Checkpoint " + checkpointName + " loaded at " + ToString(block));
+            _Trace.TraceInformation("Checkpoint " + checkpointName + " loaded at " + ToString(block));
         }
 
         internal static void CheckpointSaved(ChainedBlock block, string checkpointName)
         {
-			_Logger.LogInformation("Checkpoint " + checkpointName + " saved at " + ToString(block));
+            _Trace.TraceInformation("Checkpoint " + checkpointName + " saved at " + ToString(block));
         }
 
 
@@ -63,12 +57,12 @@ namespace NBitcoin.Indexer
                 builder.AppendLine("[" + i + "] " + entity.RowKey);
                 i++;
             }
-            _Logger.LogError(ex, "Error while importing entities (len:" + entities.Length + ")\r\n" + builder.ToString());
+            _Trace.TraceEvent(TraceEventType.Error, 0, "Error while importing entities (len:" + entities.Length + ") : " + Utils.ExceptionToString(ex) + "\r\n" + builder.ToString());
         }
 
         internal static void RetryWorked()
         {
-            _Logger.LogInformation("Retry worked");
+            _Trace.TraceInformation("Retry worked");
         }
 
         public static string Pretty(TimeSpan span)
@@ -91,23 +85,23 @@ namespace NBitcoin.Indexer
 
         internal static void TaskCount(int count)
         {
-			_Logger.LogInformation("Upload thread count : " + count);
+            _Trace.TraceInformation("Upload thread count : " + count);
         }
 
         internal static void ErrorWhileImportingBalancesToAzure(Exception ex, uint256 txid)
         {
-			_Logger.LogError(ex, "Error while importing balances on " + txid);
+            _Trace.TraceEvent(TraceEventType.Error, 0, "Error while importing balances on " + txid + " \r\n" + Utils.ExceptionToString(ex));
         }
 
         internal static void MissingTransactionFromDatabase(uint256 txid)
         {
-			_Logger.LogError("Missing transaction from index while fetching outputs " + txid);
+            _Trace.TraceEvent(TraceEventType.Error, 0, "Missing transaction from index while fetching outputs " + txid);
         }
 
 
         internal static void InputChainTip(ChainedBlock block)
         {
-            _Logger.LogInformation("The input chain tip is at height " + ToString(block));
+            _Trace.TraceInformation("The input chain tip is at height " + ToString(block));
         }
 
         private static string ToString(uint256 blockId, int height)
@@ -117,17 +111,17 @@ namespace NBitcoin.Indexer
 
         internal static void IndexedChainTip(uint256 blockId, int height)
         {
-			_Logger.LogInformation("Indexed chain is at height " + ToString(blockId, height));
+            _Trace.TraceInformation("Indexed chain is at height " + ToString(blockId, height));
         }
 
         internal static void InputChainIsLate()
         {
-			_Logger.LogInformation("The input chain is late compared to the indexed one");
+            _Trace.TraceInformation("The input chain is late compared to the indexed one");
         }
 
         public static void IndexingChain(ChainedBlock from, ChainedBlock to)
         {
-			_Logger.LogInformation("Indexing blocks from " + ToString(from) + " to " + ToString(to) + " (both included)");
+            _Trace.TraceInformation("Indexing blocks from " + ToString(from) + " to " + ToString(to) + " (both included)");
         }
 
         private static string ToString(ChainedBlock chainedBlock)
@@ -142,23 +136,23 @@ namespace NBitcoin.Indexer
             int remaining = height - maxHeight;
             if (remaining % 1000 == 0 && remaining != 0)
             {
-				_Logger.LogInformation("Remaining chain block to index : " + remaining + " (" + height + "/" + maxHeight + ")");
+                _Trace.TraceInformation("Remaining chain block to index : " + remaining + " (" + height + "/" + maxHeight + ")");
             }
         }
 
         internal static void IndexedChainIsUpToDate(ChainedBlock block)
         {
-			_Logger.LogInformation("Indexed chain is up to date at height " + ToString(block));
+            _Trace.TraceInformation("Indexed chain is up to date at height " + ToString(block));
         }
 
         public static void Information(string message)
         {
-			_Logger.LogInformation(message);
+            _Trace.TraceInformation(message);
         }
 
         internal static void NoForkFoundWithStored()
         {
-			_Logger.LogInformation("No fork found with the stored chain");
+            _Trace.TraceInformation("No fork found with the stored chain");
         }
 
         public static void Processed(int height, int totalHeight, Queue<DateTime> lastLogs, Queue<int> lastHeights)
@@ -175,7 +169,7 @@ namespace NBitcoin.Indexer
                     var remainingSize = GetSize(height, totalHeight);
                     var estimatedTime = downloadedSize < 1.0m ? TimeSpan.FromDays(999.0)
                         : TimeSpan.FromTicks((long)((remainingSize / downloadedSize) * time.Ticks));
-					_Logger.LogInformation("Blocks {0}/{1} (estimate : {2})", height, totalHeight, Pretty(estimatedTime));
+                    _Trace.TraceInformation("Blocks {0}/{1} (estimate : {2})", height, totalHeight, Pretty(estimatedTime));
                 }
                 lastLogs.Enqueue(DateTime.UtcNow);
                 lastHeights.Enqueue(height);
