@@ -18,6 +18,7 @@ after_build:
 test: off
 artifacts:
 - path: '*.nupkg'
+- path: NBitcoin.Indexer.Console.zip
 deploy:
 - provider: NuGet
   api_key:
