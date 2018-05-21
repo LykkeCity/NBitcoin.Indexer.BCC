@@ -1,5 +1,6 @@
 version: 1.0.{build}
 image: Visual Studio 2017
+configuration: Release
 assembly_info:
   patch: true
   file: '**\AssemblyInfo.*'
@@ -14,7 +15,7 @@ before_build:
 build:
   verbosity: minimal
 after_build:
-- ps: 7z a NBitcoin.Indexer.Console.zip $env:APPVEYOR_BUILD_FOLDER\NBitcoin.Indexer.Console\bin
+- ps: 7z a NBitcoin.Indexer.Console.zip $env:APPVEYOR_BUILD_FOLDER\NBitcoin.Indexer.Console\bin\Release
 test: off
 artifacts:
 - path: '*.nupkg'
